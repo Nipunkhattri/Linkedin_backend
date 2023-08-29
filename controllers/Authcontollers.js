@@ -392,7 +392,7 @@ export const authrequest = async (req,res) =>{
       if (!userToFollow) {
         return res.status(404).json({ message: "User not found" });
       }
-        userToFollow.request = userToFollow.request.filter(item => item.rid !== rid);
+        userToFollow.request = userToFollow.request.filter(item => item.id !== rid);
         await userToFollow.save();
         return res.status(200).json({ message: "Request Rejected" });
     }
