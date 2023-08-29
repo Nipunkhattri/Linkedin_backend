@@ -180,7 +180,7 @@ export const form2 = async(req,res) =>{
 
 export const addexpdata = async(req,res) =>{
   try {
-    const {title , type , Company,Location , Ltype , id} = req.body;
+    const {title , type , Company,Location , Ltype, startdate, enddate , id} = req.body;
     
     const experience = new ExpModel({
       title:title,
@@ -188,6 +188,8 @@ export const addexpdata = async(req,res) =>{
       Company:Company,
       Location:Location,
       Ltype:Ltype,
+      startdate:startdate,
+      enddate:enddate?enddate:"Present",
       id:id
     })
 
@@ -201,7 +203,7 @@ export const addexpdata = async(req,res) =>{
 
 export const EdataUp = async (req,res) =>{
   try {
-    const {title,type,Company,Location , Ltype,_id} = req.body;
+    const {title,type,Company,Location,startdate,enddate, Ltype,_id} = req.body;
 
     const data = await ExpModel.findById({_id});
 
@@ -214,6 +216,8 @@ export const EdataUp = async (req,res) =>{
     data.Company = Company ;
     data.Location = Location;
     data.Ltype = Ltype;
+    data.startdate = startdate;
+    data.enddate = enddate;
 
     console.log(data);
 
@@ -225,7 +229,7 @@ export const EdataUp = async (req,res) =>{
 }
 export const ProUp = async (req,res) =>{
   try {
-    const {ProjectName,AboutP,ProjectLink,_id} = req.body;
+    const {ProjectName,AboutP,ProjectLink , startdate,enddate,_id} = req.body;
 
     const data = await ProjectModel.findById({_id});
 
@@ -236,6 +240,8 @@ export const ProUp = async (req,res) =>{
     data.ProjectName = ProjectName ; 
     data.AboutP = AboutP ;
     data.ProjectLink = ProjectLink ;
+    data.startdate = startdate;
+    data.enddate = enddate;
 
     console.log(data);
 
@@ -249,12 +255,14 @@ export const ProUp = async (req,res) =>{
 
 export const addprodata = async (req,res) =>{
   try {
-    const {ProjectName , AboutP , ProjectLink ,id} = req.body;
+    const {ProjectName , AboutP , ProjectLink,startdate,enddate ,id} = req.body;
 
     const project  = new ProjectModel({
       ProjectName:ProjectName,
       AboutP:AboutP,
       ProjectLink:ProjectLink,
+      startdate:startdate,
+      enddate:enddate,
       id:id
     })
 
@@ -397,7 +405,7 @@ export const addlike = async (req,res) =>{
   try {
     const {_id , postid} = req.body;
 
-    const postuser = await Postmodel.findById({_id:postid});
+    const postuser = await Postmodel.findByIdAndDelete({_id:postid});
 
     console.log(postuser);
     if (!postuser) {
@@ -460,5 +468,51 @@ export const getnames = async (req,res)=>{
     return res.status(200).json(namesArray);
   } catch (error) {
     console.log(error)
+  }
+}
+
+export const DeleteExp = async(req,res) =>{
+  try {
+    const {id} = req.params;
+    console.log(id);
+    const data = await ExpModel.findByIdAndDelete({_id:id})
+    if (!data) {
+      return res.status(404).json({ message: 'Data not found' });
+    }
+    console.log(data);
+    return res.status(200).json("Deleted Successfuly");
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+}
+export const DeletePro = async(req,res) =>{
+  try {
+    const {id} = req.params;
+    console.log(id);
+    const data = await ProjectModel.findByIdAndDelete({_id:id})
+    if (!data) {
+      return res.status(404).json({ message: 'Project not found' });
+    }
+    console.log(data);
+    return res.status(200).json("Deleted Successfuly");
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+}
+export const DeletePost = async(req,res) =>{
+  try {
+    const {id} = req.params;
+    console.log(id);
+    const data = await Postmodel.findByIdAndDelete({_id:id})
+    if (!data) {
+      return res.status(404).json({ message: 'Post not found' });
+    }
+    console.log(data);
+    return res.status(200).json("Deleted Successfuly");
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: 'Internal server error' });
   }
 }

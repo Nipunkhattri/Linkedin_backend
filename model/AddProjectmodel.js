@@ -13,6 +13,14 @@ const AddProject = mongoose.Schema({
         type:String,
         required:true
     },
+    startdate:{
+        type:String,
+        required:true
+    },
+    enddate:{
+        type:String,
+        required:true
+    },
     id:{
         type:String,
         required:true

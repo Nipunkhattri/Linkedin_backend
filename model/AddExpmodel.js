@@ -21,6 +21,13 @@ const AddExperience = mongoose.Schema({
         type:String,
         required:true
     },
+    startdate:{
+        type:String,
+        required:true
+    },
+    enddate:{
+        type:String,
+    },
     id:{
         type:String,
         required:true
