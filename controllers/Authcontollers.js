@@ -405,7 +405,7 @@ export const addlike = async (req,res) =>{
   try {
     const {_id , postid} = req.body;
 
-    const postuser = await Postmodel.findByIdAndDelete({_id:postid});
+    const postuser = await Postmodel.findById({_id:postid});
 
     console.log(postuser);
     if (!postuser) {
