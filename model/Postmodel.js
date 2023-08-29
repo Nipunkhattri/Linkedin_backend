@@ -20,6 +20,16 @@ const Postmodel = mongoose.Schema({
     id:{
         type:String,
         required:true
+    },
+    type:{
+        type:String,
+        required:true
+    },
+    Like:{
+        type:[String]
+    },
+    Comment:{
+        type:[Object]
     }
 })
 

@@ -42,6 +42,12 @@ const UserSchema = mongoose.Schema({
     },
     image:{
         type:String
+    },
+    followers:{
+        type:[String]
+    },
+    request:{
+        type:[Object]
     }
 })
 

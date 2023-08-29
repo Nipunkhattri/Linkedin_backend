@@ -11,6 +11,7 @@ import { Readable } from 'stream';
 import multer from 'multer'
 import Authmodel from "./model/Authmodel.js";
 import Postmodel from "./model/Postmodel.js";
+import EventModel from './model/EventModel.js'
 cloudinary.config({ 
   cloud_name: 'dlc1gcuag', 
   api_key: '589645244337479', 
@@ -52,7 +53,7 @@ app.post('/upload', upload , async (req, res) => {
             user.image = result.secure_url;
             await user.save();
 
-            res.status(200).json({ secure_url: result.secure_url });
+            res.status(200).json({ secure_url: result.secure_url});
           } catch (updateError) {
             console.error('Error updating user:', updateError);
             res.status(500).json({ message: 'Server error' });
@@ -71,14 +72,76 @@ app.post('/upload', upload , async (req, res) => {
   });
 
 app.post('/api/post',upload , async (req,res)=>{
+    try {
+      const { id, text } = req.body;
+      if (!req.file) {
+        return res.status(400).json({ message: 'No file provided' });
+      }
+      
+      const user = await Authmodel.findById({ _id: id });
+      console.log(user);
+      
+      let folder = 'profile_images';
+      let resourceType = 'image';
+      console.log(req.file.mimetype);
+      if (req.file.mimetype.startsWith('video/')) {
+        folder = 'profile_videos';
+        resourceType = 'video';
+      }
+      const options = {
+        resource_type: resourceType,
+        folder: folder,
+        chunk_size: 6000000, // Set chunk size as needed (6 MB in this example)
+        eager: [{ width: 300, height: 300, crop: 'scale' }] // Eager transformations if desired
+      };
+      
+      const uploadStream = cloudinary.uploader.upload_stream(
+        options,
+        async (error, result) => {
+          if (error) {
+            console.error('Error uploading file:', error);
+            return res.status(500).json({ message: 'Server error found' });
+          }
+          console.log(result.secure_url);
+          try {
+            const data = new Postmodel({
+              text: text,
+              PostVim: result.secure_url,
+              name: user.FirstName + ' ' + user.lastname,
+              image: user.image,
+              id: user._id,
+              type:resourceType
+            });
+            await data.save();
+  
+            const ans = await Postmodel.find();
+            console.log(ans);
+            res.status(200).json(ans);
+          } catch (updateError) {
+            console.error('Error updating user:', updateError);
+            res.status(500).json({ message: 'Server error' });
+          }
+        }
+      );
+  
+      const fileStream = new Readable();
+      fileStream.push(req.file.buffer);
+      fileStream.push(null);
+      fileStream.pipe(uploadStream);
+  }
+  catch (error) {
+    console.log(error)
+  }
+})
+
+app.post('/api/event',upload,async(req,res)=>{
+  const {eventtype,eventformat,eventName,timezone,startdate,startTime,endDate,endTime,description,speaker,externalLink,_id} = req.body;
+  if (!req.file) {
+    return res.status(400).json({ message: 'No file provided' });
+  }
+  const user = await Authmodel.findById(_id);
+  console.log(user);
   try {
-    console.log(req.body.id);
-    const {text,id} = req.body;
-    if (!req.file) {
-      return res.status(400).json({ message: 'No image provided' });
-    }
-    const user = await Authmodel.findById({_id:id});
-    console.log(user);
     const uploadStream = cloudinaryV2.uploader.upload_stream(
       { folder: 'profile_images' },
       async (error, result) => {
@@ -86,21 +149,27 @@ app.post('/api/post',upload , async (req,res)=>{
           console.error('Error uploading image:', error);
           return res.status(500).json({ message: 'Server error' });
         }
-
         try {
-          const data = new Postmodel({
-            text:text,
-            PostVim:result.secure_url,
-            name:user.FirstName+' '+ user.lastname,
-            image:user.image,
-            id:user._id
+          // Find the user by their ID and update their image field
+          const data = await new EventModel({
+            image:result?.secure_url,
+            eventType:eventtype,
+            eventFormat:eventformat,
+            eventName:eventName,
+            timezone:timezone,
+            startdate:startdate,
+            starttime:startTime,
+            enddate:endDate,
+            endTime:endTime,
+            description:description,
+            speaker:speaker,
+            externalLink:externalLink?externalLink:"",
+            PersonPosted:user?.FirstName+ ' ' + user?.lastname
           })
+
           await data.save();
 
-          const ans = await Postmodel.find();
-          console.log(ans);
-          res.status(200).json(ans);
-
+          res.status(200).json('Event Added successfully');
         } catch (updateError) {
           console.error('Error updating user:', updateError);
           res.status(500).json({ message: 'Server error' });
@@ -116,6 +185,7 @@ app.post('/api/post',upload , async (req,res)=>{
     console.log(error)
   }
 })
+
 
 app.get("/",(req,res)=>{
     res.json({message:"Hello"})
