@@ -353,8 +353,7 @@ export const authfollow = async (req,res) =>{
 
     const name = userwhoFollow?.FirstName + ' ' + userwhoFollow?.lastname;
     const image = userwhoFollow?.image;
-
-    if(name == undefined || image == undefined){
+    if( userwhoFollow?.FirstName == undefined || userwhoFollow?.lastname == undefined || image == undefined){
       return res.status(404).json({ message: "First Update Your Profile" });
     }
 
