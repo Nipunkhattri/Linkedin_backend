@@ -116,13 +116,13 @@ export const form1 = async (req,res) =>{
       return res.status(404).json({ error: 'User not found' });
     }
 
-    user.FirstName = firstname || user.FirstName;
-    user.lastname = lastname || user.lastname;
-    user.headline = headline || user.headline;
-    user.Education = Education || user.Education;
-    user.Country = Country || user.Country;
-    user.City = City || user.City;
-    user.CurrentPos = CurrentPos || user.CurrentPos;
+    user.FirstName = firstname || user.FirstName || '';
+    user.lastname = lastname || user.lastname || '';
+    user.headline = headline || user.headline || '';
+    user.Education = Education || user.Education ||'';
+    user.Country = Country || user.Country || '';
+    user.City = City || user.City || '';
+    user.CurrentPos = CurrentPos || user.CurrentPos || '';
 
     await user.save();
     return res.json(user);
@@ -161,7 +161,6 @@ export const form2 = async(req,res) =>{
   console.log(textarea);
   try {   
     const user  = await AuthModel.findById({_id:id});
-
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
@@ -181,11 +180,16 @@ export const form2 = async(req,res) =>{
 export const addexpdata = async(req,res) =>{
   try {
     const {title , type , Company,Location , Ltype, startdate, enddate , id} = req.body;
+    const data = await AuthModel.findOne({FirstName:Company});
+    const image =  data?.image;
+    console.log(data);
+    console.log(image);
     
-    const experience = new ExpModel({
+    const experience = await new ExpModel({
       title:title,
       type:type,
       Company:Company,
+      image:image,
       Location:Location,
       Ltype:Ltype,
       startdate:startdate,
@@ -353,13 +357,17 @@ export const authfollow = async (req,res) =>{
 
     const name = userwhoFollow?.FirstName + ' ' + userwhoFollow?.lastname;
     const image = userwhoFollow?.image;
-    if( userwhoFollow?.FirstName == undefined || userwhoFollow?.lastname == undefined || image == undefined){
+    if( userwhoFollow?.FirstName == undefined || image == undefined){
       return res.status(404).json({ message: "First Update Your Profile" });
     }
-
-    if (!userToFollow.followers.includes(id)) {
-      userToFollow.request.push({ id, rid, name,image,boolean: false });      await userToFollow.save();
-
+    const existingRequest = userToFollow.request.find(request => (
+      request.id === id && request.rid === rid && request.name === name
+    ));
+    console.log(userToFollow)
+    console.log(userwhoFollow);
+    if (!userToFollow.followers.includes(id) && !existingRequest) {
+      userToFollow.request.push({ id, rid, name,image,boolean: false });      
+      await userToFollow.save();
       return res.status(200).json({ message: "Request Send successfully" });
     } else {
       return res.status(400).json({ message: "Already following this user" });
@@ -376,15 +384,19 @@ export const authrequest = async (req,res) =>{
     console.log(req.body);
     if( request == 'accept'){
       const userToFollow = await AuthModel.findById({_id:id});
+      const userwhoFollow = await AuthModel.findById({_id:rid});
       if (!userToFollow) {
         return res.status(404).json({ message: "User not found" });
       }
+      console.log(userwhoFollow);
+      console.log(id);
       if (!userToFollow.followers.includes(rid)) {
         userToFollow.followers.push(rid);
+        userwhoFollow.following.push(id);
         await userToFollow.save();
+        await userwhoFollow.save();
         userToFollow.request = userToFollow.request.filter(item => item.id !== rid);
-        await userToFollow.save();  
-  
+        await userToFollow.save();
         return res.status(200).json({ message: "Request Accepted successfully" });
       } else {
         return res.status(400).json({ message: "Already following this user" });
@@ -463,11 +475,13 @@ export const getnames = async (req,res)=>{
   try {
     const result = await AuthModel.find();
     console.log(result);
-    const namesArray = result.map((item) => ({
-      _id: item._id,
-      name: item.FirstName + ' ' + item.lastname,
-      image:item?.image
-    }));
+    const namesArray = result
+      .filter(item => item.FirstName !== undefined && item.lastname !== undefined && item.image !== undefined)
+      .map(item => ({
+        _id: item._id,
+        name: item.FirstName + ' ' + item.lastname,
+        image: item?.image
+      }));
     return res.status(200).json(namesArray);
   } catch (error) {
     console.log(error)
@@ -517,5 +531,18 @@ export const DeletePost = async(req,res) =>{
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: 'Internal server error' });
+  }
+}
+
+export const handleselect = async (req,res) =>{
+  try {
+    const {userid,option} = req.body;
+    const user = await AuthModel.findById({_id:userid});
+    user.select = option;
+    user.save();
+    console.log(user);
+    res.status(200).json(user);
+  } catch (error) {
+    console.log(error);
   }
 }

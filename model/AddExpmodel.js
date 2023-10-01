@@ -17,6 +17,9 @@ const AddExperience = mongoose.Schema({
         type:String,
         required:true
     },
+    image:{
+        type:String,
+    },
     Ltype:{
         type:String,
         required:true

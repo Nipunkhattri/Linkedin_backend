@@ -19,7 +19,7 @@ const UserSchema = mongoose.Schema({
     },
     headline:{
         type:String,
-        // required:true        
+        // required:true
     },
     Education:{
         type:String,
@@ -46,8 +46,14 @@ const UserSchema = mongoose.Schema({
     followers:{
         type:[String]
     },
+    following:{
+        type:[String]
+    },
     request:{
         type:[Object]
+    },
+    select:{
+        type:String,
     }
 })
 

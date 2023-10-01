@@ -1,5 +1,5 @@
 import express from 'express';
-import { AdminLogin ,GoogleLogin,DeleteExp,DeletePost,DeletePro,getnames, Register ,form1,addcomment,addlike,getuserdata,fetchdatPost,authrequest,fetchdatEvent ,ProUp,addexpdata,EditPro,EdataUp,EditExp,fetchProdata,addprodata ,form2, fetchexpdata,getprofiledata, authfollow} from '../controllers/Authcontollers.js';
+import { AdminLogin ,GoogleLogin,DeleteExp,handleselect,DeletePost,DeletePro,getnames, Register ,form1,addcomment,addlike,getuserdata,fetchdatPost,authrequest,fetchdatEvent ,ProUp,addexpdata,EditPro,EdataUp,EditExp,fetchProdata,addprodata ,form2, fetchexpdata,getprofiledata, authfollow} from '../controllers/Authcontollers.js';
 const router = express.Router();
 
 router.post('/loginnow',AdminLogin);
@@ -27,4 +27,5 @@ router.get('/getdataname',getnames)
 router.delete('/deleteExp/:id',DeleteExp)
 router.delete('/deletePro/:id',DeletePro)
 router.delete('/deletePost/:id',DeletePost)
+router.post('/select',handleselect)
 export default router;
