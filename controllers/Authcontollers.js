@@ -1,5 +1,6 @@
 import AuthModel from "../model/Authmodel.js";
 import ExpModel from "../model/AddExpmodel.js";
+import MessageModel from '../model/MessageModel.js'
 import ProjectModel from "../model/AddProjectmodel.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
@@ -542,6 +543,52 @@ export const handleselect = async (req,res) =>{
     user.save();
     console.log(user);
     res.status(200).json(user);
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export const handlepostMessage = async(req,res) =>{
+  try {
+    const{userId,id,text} = req.body;
+    const existingData = await MessageModel.findOne({ userId, id });
+    if (existingData) {
+      existingData.text.push({ text: text });
+      const updatedData = await existingData.save();
+      res.status(200).json(updatedData);
+    } else {
+      const newData = await MessageModel.create({
+        userId: userId,
+        id: id,
+        text: [{ text: text }],
+      });
+      res.status(201).json(newData.text);
+    }
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+export const getMessage = async(req,res) =>{
+  try {
+    const {userId,id} = req.body;
+    console.log(userId);
+    console.log(id);
+    const existingData = await MessageModel.findOne({userId:id,id:userId});
+    console.log(existingData);
+    res.status(200).json(existingData?.text);
+  } catch (error) {
+    console.log(error);
+  }
+}
+export const getsMessage = async(req,res) =>{
+  try {
+    const {userId,id} = req.body;
+    console.log(userId);
+    console.log(id);
+    const existingData = await MessageModel.findOne({userId:userId,id:id});
+    console.log(existingData);
+    res.status(200).json(existingData?.text);
   } catch (error) {
     console.log(error);
   }
